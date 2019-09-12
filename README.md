@@ -19,9 +19,10 @@ pip install -r requirements.txt
 
 ### Spin up the service
 
-```
 # start up local server
-python -m run 
+```bash
+$ export FLASK_APP=run.py
+$ flask run
 ```
 
 #### Using Pip
@@ -58,5 +59,5 @@ API base url --> (by default, http://127.0.0.1:5000)
 Run the following command in your virtual environment:
 
 ```bash
-$ python -m unittest tests/test_routes.py
+$ pytest -v
 ```

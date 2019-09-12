@@ -20,10 +20,26 @@ def health_check():
 
 @app.route('/v1/get-profile-data', methods=['GET'])
 def get_merged_profile_data():
-    """Brings profile summary from both bitbucket and github"""
+    """
+        Consolidates Bitbucket and Github repository summaries. 
+
+        URI: /v1/get-profile-data
+
+        Query Parameters: 
+            * github_username : Specify the github handle of the organization or team.
+            * bitbucket_username : Specify the bitbucket handle of the organization or team.
+
+        Returns: Consolidated Profile object
+
+        TODO: 
+            * The response could contain separate objects for github profile and bitbuckety profile for better downstream usage. However in this 
+            case we assume that we are simply dealing with an API which is consolidating the metrics and attributes exposed by both these systems.            
+    """
     profiles = []
 
     profile_obj = {
+        'github_handle' : '',
+        'bitbucket_handle': '',
         'stars_received': 0,
         'open_issues': 0,
         'languages': set(),
@@ -36,23 +52,21 @@ def get_merged_profile_data():
     }
 
     request_args = flask.request.args
-    if request_args.get('github_usernames'):
-        delimiter = request_args.get('username_delimiter', ',')
 
-        usernames = {username.strip() for username in request_args['github_usernames'].split(delimiter)}
-        for username in usernames:
-            profile = GitHub(username)
-            profile.validate_username()
-            profiles.append(profile)
+    github_handle = ''
+    bitbucket_handle = ''
+    
+    if request_args.get('github_username'):
+        github_handle = request_args['github_username']
+        git_profile = GitHub(github_handle)
+        git_profile.validate_username()
+        profiles.append(git_profile)
 
-    if request_args.get('bitbucket_usernames'):
-        delimiter = request_args.get('username_delimiter', ',')
-
-        usernames = {username.strip() for username in request_args['bitbucket_usernames'].split(delimiter)}
-        for username in usernames:
-            profile = Bitbucket(username)
-            profile.validate_username()
-            profiles.append(profile)
+    if request_args.get('bitbucket_username'):
+        bitbucket_handle = request_args['bitbucket_username']
+        bitbucket_profile = Bitbucket(bitbucket_handle)
+        bitbucket_profile.validate_username()
+        profiles.append(bitbucket_profile)
 
     for profile in profiles:
         profile_obj['public_repos']['original'] += profile.original_public_repos_count
@@ -62,6 +76,11 @@ def get_merged_profile_data():
         profile_obj['public_repos']['forked'] += profile.forked_public_repos_count
         profile_obj['languages'].update(profile.repositories_per_language.keys())
         profile_obj['topics'].update(profile.repositories_per_topic.keys())
+
+    profile_obj['github_handle'] = github_handle
+    profile_obj['bitbucket_handle'] = bitbucket_handle
     profile_obj['topics'] = tuple(profile_obj['topics'])
     profile_obj['languages'] = tuple(profile_obj['languages'])
+    
     return flask.jsonify(profile_obj)
+

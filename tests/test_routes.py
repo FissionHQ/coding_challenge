@@ -16,7 +16,6 @@ class SummaryTestCase(unittest.TestCase):
         self.patcher.stop()
         return super().doCleanups()
 
-
 class BitBucketUsernameValidationTestCase(SummaryTestCase):
     @responses.activate
     def test_invalid_username(self):
@@ -25,7 +24,7 @@ class BitBucketUsernameValidationTestCase(SummaryTestCase):
         with mock.patch.object(HostService, 'validate_username_url', new_callable=mock_url):
             with self.assertRaises(profile_exceptions.ProfileNotFoundError) as testContext:
                 HostService('testuser').validate_username()
-        self.assertEqual(f'testuser profile do not exists', str(testContext.exception))
+        self.assertEqual('testuser profile do not exists', str(testContext.exception))
 
     @responses.activate
     def test_valid_username(self):
