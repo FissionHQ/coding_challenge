@@ -24,11 +24,39 @@ pip install -r requirements.txt
 python -m run 
 ```
 
+#### Using Pip
+
+```bash
+$ python3.6 -m venv /path/to/venv
+$ . venv/bin/activate
+$ pip install -r requirements.txt
+```
+
 ### Making Requests
 
 ```
 curl -i "http://127.0.0.1:5000/health-check"
+
+curl -i "http://127.0.0.1:5000/v1/get-profile-data?github_usernames=phlogistonjohn&bitbucket_usernames=phlogistonjohn"
 ```
 
+API base url --> (by default, http://127.0.0.1:5000)
 
-## What'd I'd like to improve on...
+# Endpoints usage examples
+
+- Get summary object for a single GitHub user:
+    ```bash
+    $ curl <base url>/v1/get-profile-data?github_usernames=<GitHubUsername> -v
+    ```
+- Get aggregated results of both the GitHub user and Bitbucket user:
+    ```bash
+    $ curl <base url>/v1/get-profile-data?github_usernames=<GitHubUsername>&bitbucket_usernames=<BitBucketUsername> -v
+    ```
+
+### Run the Tests
+
+Run the following command in your virtual environment:
+
+```bash
+$ python -m unittest tests/test_routes.py
+```
